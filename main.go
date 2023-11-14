@@ -54,10 +54,10 @@ func main() {
 		logrus.Fatalf("Invalid options, err:%s", err.Error())
 	}
 
-	if o.enableDebug {
-		logrus.SetLevel(logrus.DebugLevel)
-		logrus.Debug("debug enabled.")
-	}
+	// if o.enableDebug {
+	logrus.SetLevel(logrus.DebugLevel)
+	logrus.Debug("debug enabled.")
+	// }
 
 	// cfg
 	cfg, err := config.LoadConfig(o.service.ConfigFile)

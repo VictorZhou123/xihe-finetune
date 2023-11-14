@@ -2,6 +2,7 @@ package app
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/opensourceways/xihe-finetune/domain"
 	"github.com/opensourceways/xihe-finetune/domain/finetune"
@@ -56,6 +57,8 @@ type finetuneService struct {
 }
 
 func (s *finetuneService) Create(cmd *FinetuneCreateCmd) (JobInfoDTO, string, error) {
+	fmt.Printf("cmd: %+v\n", cmd)
+	
 	dto := JobInfoDTO{}
 	code := ""
 

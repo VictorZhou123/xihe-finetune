@@ -41,7 +41,8 @@ try :
     conn = engine.connect()
     Session = sessionmaker(bind=conn)
     session = scoped_session(Session)
-except:
+except Exception as e:
+   print(f"new session failed, err: {e}")
    app.logger.error("Database connection failed.")
 
 if os.path.exists(basic_config['CA_CERT_PATH']):
@@ -79,14 +80,17 @@ class User(Base):
     @staticmethod
     def verify_auth_token(token):
         try:
+            print(f"token in verify_auth_token {token}")
             # 验证并解码 JWT
             claims = jwt.decode(token, app.config["SECRET_KEY"])
             # 获取当前用户信息
             user = session.query(User).get(claims["sub"])
-        except ExpiredTokenError:
+        except ExpiredTokenError as e:
+            print(f"token invalid, err: {e}")
             app.logger.info("token invalid")
             return None
-        except Exception:
+        except Exception as ee:
+            print(f"jwt decode err: {ee}")
             return None
         return user
 
@@ -119,21 +123,31 @@ def health_func():
 
 @app.route("/foundation-model/token", methods=["POST"])
 def get_auth_token():
+    print("get auth token begin")
+
     if request.json is None:
         abort(400)
     username = request.json.get("username")
     password = request.json.get("password")
+
     if username is None or password is None:
         return jsonify({"status": "-1", "msg": "输入用户名或者密码为空"})
     try:
         user = session.query(User).filter(User.username==username).first()
-    except:
+    except Exception as e:
+        print(f"session query failed, err: {e}")
         app.logger.error("Database search failed.")
     if not user or not user.verify_password(password):
         return jsonify({"status": "-1", "msg": "用户名不存在或者用户名错误或者密码错误"})
     g.user = user
     duration = 600
+
+    print("before user generate_auth_token")
+
     token = g.user.generate_auth_token(duration)
+
+    print("this is token: %s", token)
+
     return jsonify({
         "status": 200,
         "msg": "获取token成功",
@@ -145,6 +159,8 @@ def get_auth_token():
 @app.route("/v1/foundation-model/finetune", methods=["POST"])
 @auth.login_required
 def create_finetune():
+    print("create finetune begin...")
+
     if not request.json:
         abort(400)
     for key in ["user", "task_name", "foundation_model", "task_type"]:

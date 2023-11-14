@@ -3,6 +3,7 @@ package finetuneimpl
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -48,6 +49,9 @@ func (cli *client) logURL(jobId string) string {
 }
 
 func (cli *client) token() (t string, err error) {
+	fmt.Printf("cli.tokenURL(): %v\n", cli.tokenURL())
+	fmt.Printf("string(cli.tokenReq): %v\n", string(cli.tokenReq))
+
 	req, err := http.NewRequest(
 		http.MethodPost, cli.tokenURL(), bytes.NewBuffer(cli.tokenReq),
 	)
@@ -175,16 +179,20 @@ func (cli *client) terminateJob(jobId string) (err error) {
 func (cli *client) getLogURL(jobId string) (log string, err error) {
 	req, err := http.NewRequest(http.MethodGet, cli.logURL(jobId), nil)
 	if err != nil {
+		fmt.Print("this is error7")
 		return
 	}
 
 	token, err := cli.token()
+	fmt.Printf("token: %v\n", token)
 	if err != nil {
+		fmt.Print("this is error8")
 		return
 	}
 
 	resp := new(logResp)
 	if err = cli.forwardTo(req, token, resp); err != nil {
+		fmt.Print("this is error9")
 		return
 	}
 
@@ -203,6 +211,8 @@ func (cli *client) forwardTo(req *http.Request, token string, jsonResp interface
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
+
+	fmt.Printf("req: %+v\n", req)
 
 	_, err = cli.hc.ForwardTo(req, jsonResp)
 

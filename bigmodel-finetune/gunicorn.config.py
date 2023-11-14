@@ -42,6 +42,6 @@ x_forwarded_for_header = "X-FORWARDED-FOR"
 
 print(multiprocessing.cpu_count())
 workers = 1    # 进程数
-threads = int(CPU_COUNT)     # 指定每个进程开启的线程数
+threads = 1     # 指定每个进程开启的线程数
 
 
